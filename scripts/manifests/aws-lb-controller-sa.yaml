@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: kube-system
+  name: aws-load-balancer-controller
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/name: aws-load-balancer-controller
+  annotations:
+    eks.amazonaws.com/role-arn: ${ALB_CONTROLLER_ROLE_ARN}
+

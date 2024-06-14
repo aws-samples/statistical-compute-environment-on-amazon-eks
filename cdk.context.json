@@ -1,0 +1,9 @@
+{
+    "clusterName": "posit-sce",
+    "stackName": "posit-sce",
+    "databaseName": "rstudio",
+    "databaseUsername": "rstudio",
+    "efsCsiDriverServiceAccountName": "efs-csi-controller-sa",
+    "vpcCniDriverServiceAccountName": "aws-node",
+    "albControllerServiceAccountName": "aws-load-balancer-controller"
+}

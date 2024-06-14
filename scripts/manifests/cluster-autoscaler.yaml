@@ -1,0 +1,13 @@
+replicaCount: 3
+autoDiscovery:
+  clusterName: ${EKS_CLUSTER_NAME}
+  tags:
+  - k8s.io/cluster-autoscaler/enabled
+  - k8s.io/cluster-autoscaler/{{ .Values.autoDiscovery.clusterName }}
+awsRegion: ${AWS_REGION}
+cloudProvider: aws
+rbac:
+  create: true
+  serviceAccount:
+    create: false
+    name: "aws-load-balancer-controller"

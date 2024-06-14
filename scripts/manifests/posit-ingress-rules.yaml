@@ -1,0 +1,153 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: posit-workbench-header
+  namespace: posit-workbench
+spec:
+  headers:
+    customRequestHeaders:
+      X-RStudio-Request: "http://${DOMAIN}/pwb"
+      X-RStudio-Root-Path: "/pwb"
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: workbench-stripprefix
+  namespace: posit-workbench
+spec:
+  stripPrefix:
+    prefixes:
+      - /pwb
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: posit-connect-header
+  namespace: posit-connect
+spec:
+  headers:
+    customRequestHeaders:
+      X-RSC-Request: "http://${DOMAIN}/pct"
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: posit-connect-rewrite-location
+  namespace: posit-connect
+spec:
+  plugin:
+    rewrite-headers:
+      rewrites:
+        - header: "Location"
+          regex: "^/(.*)$"
+          replacement: "/pct/$1"
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: connect-stripprefix
+  namespace: posit-connect
+spec:
+  stripPrefix:
+    prefixes:
+      - /pct
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: posit-packman-header
+  namespace: posit-packman
+spec:
+  headers:
+    customRequestHeaders:
+      X-RSC-Request: "http://${DOMAIN}/ppm"
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: posit-packman-rewrite-location
+  namespace: posit-packman
+spec:
+  plugin:
+    rewrite-headers:
+      rewrites:
+        - header: "Location"
+          regex: "^/(.*)$"
+          replacement: "/ppm/$1"
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: packman-stripprefix
+  namespace: posit-packman
+spec:
+  stripPrefix:
+    prefixes:
+      - /ppm
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: posit-workbench-routes
+  namespace: posit-workbench
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`${DOMAIN}`) && PathPrefix(`/pwb`)
+      middlewares:
+        - name: posit-workbench-header
+        - name: workbench-stripprefix
+      services:
+        - name: rstudio-workbench-prod
+          port: 80
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: posit-connect-routes
+  namespace: posit-connect
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`${DOMAIN}`) && PathPrefix(`/pct`)
+      middlewares:
+        - name: posit-connect-header
+        - name: posit-connect-rewrite-location
+        - name: connect-stripprefix
+      services:
+        - name: rstudio-connect-prod
+          port: 80
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: posit-packman-routes
+  namespace: posit-packman
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`${DOMAIN}`) && PathPrefix(`/ppm`)
+      middlewares:
+        - name: posit-packman-header
+        - name: posit-packman-rewrite-location
+        - name: packman-stripprefix
+      services:
+        - name: rstudio-pm-prod
+          port: 80

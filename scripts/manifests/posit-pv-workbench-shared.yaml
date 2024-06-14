@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: efs-pv-workbench-shared
+spec:
+  capacity:
+    storage: ${WORKBENCH_SHARED_STORAGE}Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-pv-workbench-shared
+  mountOptions:
+    - tls
+    - iam
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: ${EFS_ID}::${efs_ap_workbench_shared}
