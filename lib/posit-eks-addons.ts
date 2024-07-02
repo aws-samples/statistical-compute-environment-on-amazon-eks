@@ -3,6 +3,7 @@ import { type Construct } from 'constructs'
 import * as eks from 'aws-cdk-lib/aws-eks'
 import * as iam from 'aws-cdk-lib/aws-iam'
 import * as util from './util'
+import { NagSuppressions } from 'cdk-nag'
 
 interface EksAddonsProps extends cdk.StackProps {
   cluster: eks.CfnCluster
@@ -13,6 +14,23 @@ interface EksAddonsProps extends cdk.StackProps {
 export class AddonsStack extends cdk.NestedStack {
   constructor(scope: Construct, id: string, props: EksAddonsProps) {
     super(scope, id, props)
+
+    // Supressing CDK NAG wildcard issues as role is only applied to the governed and vetted EFS driver package.
+    // Custom resource specifications drastically increases complexity
+    NagSuppressions.addStackSuppressions(this, [
+      {
+        id: 'AwsSolutions-IAM4',
+        reason: 'Following EFS driver best-practices.'
+      },
+    ])
+    // Supressing CDK NAG wildcard issues as role is only applied to the governed and vetted ALB Controller package.
+    // Custom resource specifications drastically increases complexity
+    NagSuppressions.addStackSuppressions(this, [
+      {
+        id: 'AwsSolutions-IAM5',
+        reason: 'Log groups are dynamically created so it requires broad scope permissions. No significant impact to security. '
+      },
+    ])
 
     const coreDns = new eks.CfnAddon(this, 'posit-sce-eks-core-dns', {
       addonName: 'coredns',

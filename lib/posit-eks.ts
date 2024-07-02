@@ -3,6 +3,7 @@ import { type Construct } from 'constructs'
 import * as eks from 'aws-cdk-lib/aws-eks'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as iam from 'aws-cdk-lib/aws-iam'
+import { NagSuppressions } from 'cdk-nag'
 
 interface EksStackProps extends cdk.StackProps {
   vpc: ec2.Vpc
@@ -14,6 +15,20 @@ export class EksStack extends cdk.NestedStack {
 
   constructor(scope: Construct, id: string, props: EksStackProps) {
     super(scope, id, props)
+
+    // CDK NAG Supression
+    NagSuppressions.addStackSuppressions(this, [
+      {
+        id: 'AwsSolutions-IAM4',
+        reason: 'Accepted minimal risk based on reliability and transferability requirements. Customers can change this to be more resource specific.'
+      },
+    ])
+    NagSuppressions.addStackSuppressions(this, [
+      {
+        id: 'AwsSolutions-EKS1',
+        reason: 'Solution deployment requires access to the EKS Kube API from the client device. We cannot assume VPC connectivity setup to client.'
+      },
+    ])
 
     const serviceRole = new iam.Role(this, 'eks-service-role', {
       assumedBy: new iam.ServicePrincipal('eks.amazonaws.com'),

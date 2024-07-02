@@ -120,7 +120,6 @@ action=$1
 # Read stack outputs and update .env file
 update_env_from_stack_outputs $action
 export_env_from_file "./.env"
-
 # kubectl config
 aws eks update-kubeconfig --name $EKS_CLUSTER_NAME
 
