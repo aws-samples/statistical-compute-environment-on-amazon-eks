@@ -10,10 +10,20 @@ import { FilesystemStack } from './posit-filesystem'
 import { DbStack } from './posit-db'
 import { EksOidcStack } from './posit-eks-oidc'
 import { AlbStack } from './posit-eks-alb'
+import { NagSuppressions } from 'cdk-nag'
+import { ConcurrencyPolicy } from 'cdk8s-plus-25'
 
 export class PositSceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
+
+    // CDK NAG Supression
+    NagSuppressions.addStackSuppressions(this, [
+      {
+        id: 'AwsSolutions-VPC7',
+        reason: 'Not required for the solution to function and we are not expecting customers to debug teh solution. Can be enabled by customers if needed.'
+      },
+    ])
 
     const clusterName = this.node.tryGetContext('clusterName')
     const efsCsiDriverServiceAccountName = this.node.tryGetContext('efsCsiDriverServiceAccountName')
@@ -71,10 +81,11 @@ export class PositSceStack extends cdk.Stack {
     })
     clusterAdmin.node.addDependency(eksClusterStack)
 
-    // FIXME: Delete in the future, find better approach
+    const currentRoleArn = process.env.CURRENT_ROLE_ARN;
+
     const currentTmpAdmin = new eks.CfnAccessEntry(this, 'posit-sce-cluster-tmp-admin', {
       clusterName: eksClusterStack.cluster.name!,
-      principalArn: `arn:aws:iam::${this.account}:role/Admin`,
+      principalArn: currentRoleArn!,
       accessPolicies: [
         {
           policyArn: `arn:${this.partition}:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy`,
@@ -85,6 +96,7 @@ export class PositSceStack extends cdk.Stack {
       ]
     })
     currentTmpAdmin.node.addDependency(eksClusterStack)
+  
 
     const efsStack = new FilesystemStack(this, 'posit-sce-efs', {
       vpc: vpcStack.vpc
@@ -101,5 +113,6 @@ export class PositSceStack extends cdk.Stack {
     })
 
     dbClusterStack.clusterSg.addIngressRule(ec2.Peer.securityGroupId(eksClusterStack.cluster.attrClusterSecurityGroupId), ec2.Port.tcp(dbClusterStack.cluster.clusterEndpoint.port), 'Allow traffic from Posit EKS cluster')
+
   }
 }

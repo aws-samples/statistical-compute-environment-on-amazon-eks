@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib'
 import { type Construct } from 'constructs'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
+import { NagSuppressions } from 'cdk-nag'
 
 interface VpcStackProps extends cdk.StackProps {
   clusterName: string
@@ -11,6 +12,14 @@ export class VpcStack extends cdk.NestedStack {
 
   constructor(scope: Construct, id: string, props: VpcStackProps) {
     super(scope, id, props)
+
+      // CDK NAG Supression
+      NagSuppressions.addStackSuppressions(this, [
+        {
+          id: 'AwsSolutions-VPC7',
+          reason: 'Not required for the solution to function and we are not expecting customers to debug teh solution. Can be enabled by customers if needed.'
+        },
+      ])
 
     this.vpc = new ec2.Vpc(this, 'posit-sce-eks-vpc')
 

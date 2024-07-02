@@ -5,6 +5,7 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as util from './util'
 import * as albPolicyDocument from './alb_controller_iam_policy.json'
+import { NagSuppressions } from 'cdk-nag'
 
 interface AlbStackProps extends cdk.StackProps {
   vpc: ec2.Vpc
@@ -28,6 +29,21 @@ export class AlbStack extends cdk.NestedStack {
     })
 
     // policy downloaded from https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/install/iam_policy.json
+    // Supressing CDK NAG wildcard issues as role is only applied to the governed and vetted ALB Controller package.
+    // Custom resource specifications drastically increases complexity
+    NagSuppressions.addStackSuppressions(this, [
+      {
+        id: 'AwsSolutions-IAM5',
+        reason: 'Will add too much complexity to specify, following the ALB controller guidance and security practices'
+      },
+    ])
+    NagSuppressions.addStackSuppressions(this, [
+      {
+        id: 'AwsSolutions-EC23',
+        reason: 'Only port 443 & 80 are open to the 0.0.0.0/0 range. Faulty check.'
+      },
+    ])
+
     const albRole = new iam.Role(this, 'posit-eks-cluster-alb-role', {
       assumedBy: new iam.FederatedPrincipal(oidcProviderArn, { StringEquals: conditionAlb }, 'sts:AssumeRoleWithWebIdentity'),
       inlinePolicies: {
@@ -36,7 +52,7 @@ export class AlbStack extends cdk.NestedStack {
     })
 
 
-    this.securityGroup = new ec2.SecurityGroup(this, 'post-postgres-db-sg', {
+    this.securityGroup = new ec2.SecurityGroup(this, 'posit-eks-alb-sg', {
       securityGroupName: 'posit-eks-alb-sg',
       description: 'SG for Posit ALB',
       vpc: props.vpc,

@@ -3,6 +3,8 @@
 gather_parameters_deploy() {
     read -p "Deployment identifier [posit-sce]: " stack_name
     stack_name=${stack_name:-posit-sce}
+    read -p "AWS Admin role name [Admin]:" admin_role
+    export CURRENT_ROLE_ARN="arn:aws:iam::262671696637:role/${admin_role:-Admin}"
     export ssl=false
     export domain=false
     echo "Do you want to use a custom domain name?"
@@ -69,6 +71,7 @@ check_aws_authentication() {
     if [[ $? -eq 0 ]]; then
         echo "AWS CLI is authenticated."
         echo "Account Number: $aws_identity"
+        echo "Admin role: $CURRENT_ROLE_ARN"
         echo "The selected AWS Region is: $current_region"
     else
         echo "Error: AWS CLI is not authenticated or AWS STS service is not reachable." >&2
