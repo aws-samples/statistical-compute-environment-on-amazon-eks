@@ -1,0 +1,78 @@
+# Controls how many instances of Posit Workbench are created.
+replicas: 1
+
+# Configures user home directory shared storage
+homeStorage:
+  create: true
+  name: workbench-user-pvc
+  storageClassName: efs-pv-workbench-user
+  volumeName: efs-pv-workbench-user
+  requests:
+    storage: ${WORKBENCH_USER_STORAGE}G
+
+# Configures Workbench shared storage
+sharedStorage:
+  create: true
+  name: workbench-shared-pvc
+  storageClassName: efs-pv-workbench-shared
+  volumeName: efs-pv-workbench-shared
+  requests:
+    storage: ${WORKBENCH_SHARED_STORAGE}G
+
+# Creates a test user to verify installation
+userCreate: true
+
+session:
+  image:
+    repository: rstudio/r-session-complete
+    tagPrefix: ubuntu2204-2023.12.1-402.pro1
+
+image:
+  repository: rstudio/rstudio-workbench
+  tag: ubuntu2204-2023.12.1-402.pro1
+
+service:
+  type: ClusterIP
+
+readinessProbe:
+  enabled: false
+# The config section is converted into the correct configuration files and are
+# mounted to the server/session pods as needed.
+config:
+  secret:
+    database.conf:
+      provider: "postgresql"
+      connection-uri: "${POSTGRES_CONNECTION_URI}&options=-csearch_path=posit_workbench"
+
+      # While it is possible to set a Postgres password here in the
+      # values file, we recommend removing the line above and providing
+      # the password at runtime using helm install's --set argument instead
+      # (e.g. --set config.secret.database\.conf.password=<your-postgres-password>)
+  session:
+    rsession.conf:
+      # These settings apply to RStudio Pro IDE sessions
+      session-timeout-minutes: 60
+      session-timeout-suspend: 1
+      session-quit-child-processes-on-exit: 1
+    repos.conf:
+      # This will set the Posit Public Package Manager (P3M) as the default R repository
+      # for Workbench users. This is recommended as P3M provides linux binaries for many
+      # R packages which will decrease package installation time. If you have your own
+      # Posit Package Manager server then replace these URLs with the URLs of your server.
+      CRAN: https://packagemanager.posit.co/cran/__linux__/jammy/latest
+  server:
+    jupyter.conf:
+      # These settings apply to Jupyter Notebook and JupyterLab IDE sessions
+      session-cull-minutes: 60
+      session-shutdown-minutes: 5
+  profiles:
+    launcher.kubernetes.profiles.conf:
+      "*":
+        # These settings are applied for all users and can be changed to suit
+        # your particular user needs. See the following resources for more information:
+        # https://github.com/rstudio/helm/tree/main/charts/rstudio-workbench#etcrstudiolauncherkubernetesprofilesconf
+        # https://docs.posit.co/ide/server-pro/job_launcher/kubernetes_plugin.html#kube-profiles
+        default-cpus: "1.0"
+        default-mem-mb: "1024"
+        max-cpus: "12.0"
+        max-mem-mb: "16384"
