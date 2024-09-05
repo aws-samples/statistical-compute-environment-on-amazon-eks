@@ -3,8 +3,14 @@
 gather_parameters_deploy() {
     read -p "Deployment identifier [posit-sce]: " stack_name
     stack_name=${stack_name:-posit-sce}
-    read -p "AWS Admin role name [Admin]:" admin_role
-    export CURRENT_ROLE_ARN="arn:aws:iam::262671696637:role/${admin_role:-Admin}"
+    ROLE_ARN=$(aws sts get-caller-identity --output text --query 'Arn')
+    echo "Do you want to use the following role for Admin rights to the EKS Cluster?"
+    echo "Role: $ROLE_ARN"
+    if ! read_yes_no; then
+        read -p "What is the role ARN: " role
+        ROLE_ARN=$role
+    fi
+    export CURRENT_ROLE_ARN=$ROLE_ARN
     export ssl=false
     export domain=false
     echo "Do you want to use a custom domain name?"
@@ -71,7 +77,6 @@ check_aws_authentication() {
     if [[ $? -eq 0 ]]; then
         echo "AWS CLI is authenticated."
         echo "Account Number: $aws_identity"
-        echo "Admin role: $CURRENT_ROLE_ARN"
         echo "The selected AWS Region is: $current_region"
     else
         echo "Error: AWS CLI is not authenticated or AWS STS service is not reachable." >&2

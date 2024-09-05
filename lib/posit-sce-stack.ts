@@ -81,7 +81,9 @@ export class PositSceStack extends cdk.Stack {
     })
     clusterAdmin.node.addDependency(eksClusterStack)
 
-    const currentRoleArn = process.env.CURRENT_ROLE_ARN;
+    const accountId = cdk.Stack.of(this).account;
+    const defaultArn = `arn:aws:iam::${accountId}:role/Admin`
+    const currentRoleArn = process.env.CURRENT_ROLE_ARN || defaultArn;
 
     const currentTmpAdmin = new eks.CfnAccessEntry(this, 'posit-sce-cluster-tmp-admin', {
       clusterName: eksClusterStack.cluster.name!,
