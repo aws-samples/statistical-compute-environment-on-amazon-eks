@@ -63,6 +63,8 @@ Before deploying the POSIT-SCE on AWS EKS, ensure you have the following prerequ
    bash ./run.sh deploy
    ```
 
+   Note: If you are running authenticated to the CLI using an assumed role - specify the ARN of the role that has been assumed where prompted to accept the role ARN.
+
    This script will run all required commands for the setup.
    The entire deployment is idem-potent and the initial configuration takes ~40 minutes.
    &nbsp;
