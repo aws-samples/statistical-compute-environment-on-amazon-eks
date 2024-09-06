@@ -22,14 +22,7 @@ Before deploying the POSIT-SCE on AWS EKS, ensure you have the following prerequ
 
 ## Getting Started
 
-1. Clone this repository:
-
-   ```bash
-   mwinit #Make sure you are authenticated into Midway TODO: Remove before publish
-   git clone git@ssh.gitlab.aws.dev:open-source/posit-sce.git
-   cd posit-sce
-   ```
-
+1. Clone this repository
 2. Install the required dependencies:
 
     ```bash
@@ -44,7 +37,12 @@ Before deploying the POSIT-SCE on AWS EKS, ensure you have the following prerequ
     npm install
    ```
 
-   Be sure to authenticate the AWS CLI, please see [this link](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) for guidance.
+   Be sure to authenticate the AWS CLI, please see [this link](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) for guidance. Make sure to note down the (or one of) the IAM Role ARN's the CLI has assumed or that the IAM user has been assigned. 
+   This role is required in the setup to provide administrative rights to the current session for configuration of the Kubernetes cluster. 
+   You can find out which user or role is assumed via the following command:
+   ```
+   aws sts get-caller-identity
+   ```
    &nbsp;
 
 3. Deploy the POSIT-SCE on AWS EKS:

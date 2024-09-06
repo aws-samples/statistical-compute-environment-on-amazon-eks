@@ -3,14 +3,10 @@
 gather_parameters_deploy() {
     read -p "Deployment identifier [posit-sce]: " stack_name
     stack_name=${stack_name:-posit-sce}
-    ROLE_ARN=$(aws sts get-caller-identity --output text --query 'Arn')
-    echo "Do you want to use the following role for Admin rights to the EKS Cluster?"
-    echo "Role: $ROLE_ARN"
-    if ! read_yes_no; then
-        read -p "What is the role ARN: " role
-        ROLE_ARN=$role
-    fi
-    export CURRENT_ROLE_ARN=$ROLE_ARN
+    echo "Please provide the IAM Role that is assigned to the current authenticated user."
+    echo "This role will be granted Admin rights on the EKS cluster for the setup."
+    read -p "ARN: " role
+    export CURRENT_ROLE_ARN=$role
     export ssl=false
     export domain=false
     echo "Do you want to use a custom domain name?"
@@ -76,6 +72,7 @@ check_aws_authentication() {
     current_region=$(aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]')
     if [[ $? -eq 0 ]]; then
         echo "AWS CLI is authenticated."
+        echo "Admin Role: $CURRENT_ROLE_ARN"
         echo "Account Number: $aws_identity"
         echo "The selected AWS Region is: $current_region"
     else
