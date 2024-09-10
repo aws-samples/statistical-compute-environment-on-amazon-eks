@@ -94,13 +94,9 @@ Can I use my own domain name?
 Can I use my own domain name?
 : Yes! The setup will ask you for the FQDN and configure posit accordingly. You will have to manually add the HTTPS listener to the Load Balancer as it requires your SSL certificate for SSL termination and configure your DNS settings to point to the LB.
 
-## Contibutors
-Michael Rupprecht - Sr. Mgr. Solution Architecture
-Modood Alvi - Senior Solution Architect
-Sam Kool - Senior Solution Architect
-
 
 ## Support
+For any issue/ support contact lind mainteners team.
 
 
 ## Known Issues
