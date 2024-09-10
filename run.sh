@@ -25,6 +25,7 @@ gather_parameters_deploy() {
 
 
 gather_parameters_destroy() {
+    export CURRENT_ROLE_ARN="Not Applicable"
     read -p "Deployment identifier [posit-sce]: " stack_name
     stack_name=${stack_name:-posit-sce}
 }

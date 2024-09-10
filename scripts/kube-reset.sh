@@ -4,7 +4,7 @@ source "./scripts/utils.sh"
 
 export_env_from_file "./.env"
 
-if ! aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region; then exit; fi
+if ! aws eks update-kubeconfig --name $EKS_CLUSTER_NAME; then exit; fi
 
 #Uninstall POSIT
 kubectl config set-context --current --namespace=posit-workbench
