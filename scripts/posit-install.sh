@@ -119,6 +119,7 @@ kubectl wait --namespace traefik --for=condition=available deployment/traefik --
 
 # 4. Create Ingress (creates LB)
 envsubst < scripts/manifests/aws-lb-controller-ingress.yaml | kubectl apply -f -
+sleep 5
 check_load_balancer_status
 
 export LB=$(kubectl get ingress traefik -n traefik -o json | jq -r ".status.loadBalancer.ingress[0].hostname")
