@@ -27,7 +27,7 @@ load_secrets() {
 
 # Function to check the status of the load balancer
 check_load_balancer_status() {
-    lb_status=$(aws elbv2 describe-load-balancers --names 'posit-sce-alb' --query 'LoadBalancers[0].State.Code' --output text)
+    lb_status=$(aws elbv2 describe-load-balancers --names $LB_NAME --query 'LoadBalancers[0].State.Code' --output text)
     
     # Check if the load balancer is active
     if [ "$lb_status" == "active" ]; then
@@ -78,6 +78,7 @@ NC="\e[0m"
 set_defaults
 export_env_from_file "./.env"
 RDS_PARAMS=$(load_secrets $POSTGRES_SECRET)
+export LB_NAME="${EKS_CLUSTER_NAME}-alb"
 
 # 1.1 Configure EKS Cluster
 printf "${BLUE}------------------------------------------------------${NC} \n"
@@ -122,11 +123,12 @@ envsubst < scripts/manifests/aws-lb-controller-ingress.yaml | kubectl apply -f -
 sleep 5
 check_load_balancer_status
 
-export LB=$(kubectl get ingress traefik -n traefik -o json | jq -r ".status.loadBalancer.ingress[0].hostname")
+export LB_URL=$(aws elbv2 describe-load-balancers --names $LB_NAME --query 'LoadBalancers[0].DNSName' --output text)
+printf "Loadbalancer DNS: ${LB_URL}" 
 if $domain; then
     export DOMAIN=$domain
 else 
-    export DOMAIN=$LB
+    export DOMAIN=$LB_URL
 fi
 
 # 5. Setup POSIT PV's
@@ -165,7 +167,7 @@ printf "${BLUE}------------------------------------------------------${NC} \n"
 printf "${BLUE}Installing & configuring the Workbench helm chart (Max. 30 seconds) ${NC} \n"
 printf "${BLUE}------------------------------------------------------${NC} \n"
 kubectl config set-context --current --namespace=posit-workbench
-envsubst < ./scripts/manifests/posit-helm-workbench.yaml | helm upgrade --install rstudio-workbench-prod rstudio/rstudio-workbench \
+envsubst < ./scripts/manifests/posit-helm-workbench.yaml | helm upgrade --install rstudio-workbench-prod rstudio/rstudio-workbench --version 0.8.9 \
     --set license.key="${PWB_LICENSE}" \
     --set config.secret.'database\.conf'.password="${POSTGRES_PASSWORD}" \
     -f -

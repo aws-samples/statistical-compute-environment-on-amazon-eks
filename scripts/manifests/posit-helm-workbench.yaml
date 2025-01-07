@@ -65,6 +65,9 @@ config:
       # These settings apply to Jupyter Notebook and JupyterLab IDE sessions
       session-cull-minutes: 60
       session-shutdown-minutes: 5
+    vscode.conf:
+      enabled: 1
+      session-timeout-kill-hours: 12
   profiles:
     launcher.kubernetes.profiles.conf:
       "*":
@@ -76,3 +79,8 @@ config:
         default-mem-mb: "1024"
         max-cpus: "12.0"
         max-mem-mb: "16384"
+prometheus:
+  enabled: false
+  legacy: false
+prometheusExporter:
+  enabled: false
