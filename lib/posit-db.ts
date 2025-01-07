@@ -52,8 +52,8 @@ export class DbStack extends cdk.NestedStack {
         instanceType: ec2.InstanceType.of(ec2.InstanceClass.R6G, ec2.InstanceSize.XLARGE),
       }),
       vpc: props.vpc,
-      deletionProtection: true,
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      deletionProtection: false,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
       securityGroups: [this.clusterSg]
     })
 

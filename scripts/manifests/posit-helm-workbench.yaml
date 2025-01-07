@@ -67,7 +67,6 @@ config:
       session-shutdown-minutes: 5
     vscode.conf:
       enabled: 1
-      session-timeout-kill-hours: 12
   profiles:
     launcher.kubernetes.profiles.conf:
       "*":
