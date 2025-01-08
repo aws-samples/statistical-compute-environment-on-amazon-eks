@@ -26,6 +26,12 @@ export class DbStack extends cdk.NestedStack {
     ])
     NagSuppressions.addStackSuppressions(this, [
       {
+        id: 'AwsSolutions-RDS10',
+        reason: 'Conflicts with stack deletion.'
+      },
+    ])
+    NagSuppressions.addStackSuppressions(this, [
+      {
         id: 'AwsSolutions-RDS6',
         reason: 'Not supported by application.'
       },
