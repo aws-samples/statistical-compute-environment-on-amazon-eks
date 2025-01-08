@@ -25,11 +25,11 @@ userCreate: true
 session:
   image:
     repository: rstudio/r-session-complete
-    tagPrefix: ubuntu2204-2023.12.1-402.pro1
+    tagPrefix: ubuntu2204
 
 image:
   repository: rstudio/rstudio-workbench
-  tag: ubuntu2204-2023.12.1-402.pro1
+  tag: ubuntu2204
 
 service:
   type: ClusterIP
