@@ -25,7 +25,7 @@ userCreate: true
 session:
   image:
     repository: rstudio/r-session-complete
-    tagPrefix: ubuntu2204
+    tag: ubuntu2204
 
 image:
   repository: rstudio/rstudio-workbench
