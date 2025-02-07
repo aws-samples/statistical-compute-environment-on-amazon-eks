@@ -25,11 +25,11 @@ userCreate: true
 session:
   image:
     repository: rstudio/r-session-complete
-    tagPrefix: ubuntu2204-2023.12.1-402.pro1
+    tag: ubuntu2204
 
 image:
   repository: rstudio/rstudio-workbench
-  tag: ubuntu2204-2023.12.1-402.pro1
+  tag: ubuntu2204
 
 service:
   type: ClusterIP
@@ -65,6 +65,8 @@ config:
       # These settings apply to Jupyter Notebook and JupyterLab IDE sessions
       session-cull-minutes: 60
       session-shutdown-minutes: 5
+    vscode.conf:
+      enabled: 1
   profiles:
     launcher.kubernetes.profiles.conf:
       "*":
@@ -76,3 +78,8 @@ config:
         default-mem-mb: "1024"
         max-cpus: "12.0"
         max-mem-mb: "16384"
+prometheus:
+  enabled: false
+  legacy: false
+prometheusExporter:
+  enabled: false

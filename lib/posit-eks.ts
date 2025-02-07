@@ -54,7 +54,7 @@ export class EksStack extends cdk.NestedStack {
         subnetIds: props.vpc.privateSubnets.map(subnet => subnet.subnetId),
         endpointPrivateAccess: true
       },
-      version: '1.29', // eks.KubernetesVersion.V1_28.version
+      version: '1.30',
       logging: {
         clusterLogging: {
           enabledTypes: [
@@ -82,7 +82,6 @@ export class EksStack extends cdk.NestedStack {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'),
-        // needed at first, otherwise node group doesn't join cluster
         iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'),
         iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'),
         iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),

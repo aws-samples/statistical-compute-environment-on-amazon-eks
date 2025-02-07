@@ -4,7 +4,7 @@ source "./scripts/utils.sh"
 # Define your domain
 export_env_from_file "./.env"
 if ! aws eks update-kubeconfig --name $EKS_CLUSTER_NAME; then exit; fi
-DOMAIN=$(kubectl get ingress traefik -n traefik -o json | jq -r ".status.loadBalancer.ingress[0].hostname")
+export LB_NAME="${EKS_CLUSTER_NAME}-alb"
 
 # Check if ACM certificate exists for the domain
 certificate_arn=$(aws acm list-certificates --query "CertificateSummaryList[?DomainName=='$DOMAIN'].CertificateArn" --output text)
@@ -13,10 +13,10 @@ if [ -n "$certificate_arn" ]; then
     echo "Certificate already exists for $DOMAIN with ARN: $certificate_arn"
 else
     echo "Certificate doesn't exist for $DOMAIN. Generating one..."
-    openssl genrsa -out "$DOMAIN.key" 2048
-    openssl req -new -key "$DOMAIN.key" -out "$DOMAIN.csr" -subj "/CN=$DOMAIN"
-    openssl x509 -req -days 365 -in "$DOMAIN.csr" -signkey "$DOMAIN.key" -out "$DOMAIN.crt"
-    aws acm import-certificate --certificate fileb://"$DOMAIN.crt" --private-key fileb://"$DOMAIN.key"
+    openssl genrsa -out "$LB_NAME.key" 2048
+    openssl req -new -key "$LB_NAME.key" -out "$LB_NAME.csr" -subj "/CN=$DOMAIN"
+    openssl x509 -req -days 365 -in "$LB_NAME.csr" -signkey "$LB_NAME.key" -out "$LB_NAME.crt"
+    aws acm import-certificate --certificate fileb://"$LB_NAME.crt" --private-key fileb://"$LB_NAME.key"
 
     rm "$DOMAIN.key" "$DOMAIN.csr" "$DOMAIN.crt"
     echo "Certificate has been generated and added to ACM for $DOMAIN"
@@ -24,7 +24,7 @@ fi
 
 #Get ALB from domain name
 certificate_arn=$(aws acm list-certificates --query "CertificateSummaryList[?DomainName=='$DOMAIN'].CertificateArn" --output text)
-alb=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?DNSName=='$DOMAIN'].LoadBalancerArn" --output text)
+alb=$(aws elbv2 describe-load-balancers --names $LB_NAME --query 'LoadBalancers[0].LoadBalancerArn' --output text)
 
 #Get data, copy HTTP Rule directly
 https_listener=$(aws elbv2 describe-listeners --load-balancer-arn $alb --query "Listeners[?Protocol=='HTTPS'].ListenerArn" --output text)
